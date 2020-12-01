@@ -187,6 +187,7 @@ along with this software (see the LICENSE.md file). If not, see
             <detail relationship="features"><detail relationship="feature"/></detail>
         </master>
     </entity>
+
     <entity entity-name="ProductAssoc" package="mantle.product">
         <field name="productId" type="id" is-pk="true"/>
         <field name="toProductId" type="id" is-pk="true"/>
@@ -240,6 +241,7 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="averageCustomerRating" type="number-decimal"/>
         <relationship type="one" related="mantle.product.Product"/>
     </entity>
+
     <entity entity-name="ProductClassContent" package="mantle.product">
         <field name="productClassEnumId" type="id" is-pk="true"/>
         <field name="productContentTypeEnumId" type="id" is-pk="true"/>
@@ -278,6 +280,7 @@ along with this software (see the LICENSE.md file). If not, see
             <key-map field-name="productClassEnumId"/></relationship>
         <relationship type="one" related="mantle.product.feature.ProductFeatureGroup"/>
     </entity>
+
     <entity entity-name="ProductContent" package="mantle.product">
         <field name="productContentId" type="id" is-pk="true"/>
         <field name="productId" type="id" not-null="true"/>
@@ -341,6 +344,29 @@ along with this software (see the LICENSE.md file). If not, see
             <moqui.basic.Enumeration description="Meta-Description" enumId="PcntMetaDescription" enumTypeId="ProductContentType"/>
         </seed-data>
     </entity>
+
+    <entity entity-name="ProductDbForm" package="mantle.product">
+        <field name="productDbFormId" type="id" is-pk="true"/>
+        <field name="productId" type="id" not-null="true"/>
+        <field name="formId" type="id" not-null="true"/>
+        <field name="productFormTypeEnumId" type="id"/>
+        <field name="sequenceNum" type="number-integer"/>
+        <field name="roleTypeId" type="id"/>
+        <field name="marketSegmentId" type="id"/>
+        <relationship type="one" related="mantle.product.Product" short-alias="product"/>
+        <relationship type="one" related="moqui.screen.form.DbForm" short-alias="dbForm"/>
+        <relationship type="one" title="ProductFormType" related="moqui.basic.Enumeration" short-alias="productFormTypeEnum">
+            <key-map field-name="productFormTypeEnumId" related="enumId"/></relationship>
+        <relationship type="one" related="mantle.party.RoleType" short-alias="role"/>
+        <relationship type="one" related="mantle.marketing.segment.MarketSegment" short-alias="marketSegment"/>
+        <seed-data>
+            <moqui.basic.EnumerationType description="Product Form Type" enumTypeId="ProductFormType"/>
+            <moqui.basic.Enumeration description="Sales Required Info" enumId="PfmtSalesRequired" enumTypeId="ProductFormType"/>
+            <moqui.basic.Enumeration description="Sales Optional Info" enumId="PfmtSalesOptional" enumTypeId="ProductFormType"/>
+            <moqui.basic.Enumeration description="Post Sale Survey" enumId="PfmtPostSaleSurvey" enumTypeId="ProductFormType"/>
+        </seed-data>
+    </entity>
+
     <!-- TODO: deprecate by ProductUomDimension, will require data migration -->
     <entity entity-name="ProductDimension" package="mantle.product">
         <field name="productId" type="id" is-pk="true"/>
@@ -421,13 +447,13 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="idValue" type="text-medium"/>
         <relationship type="one" title="ProductIdentificationType" related="moqui.basic.Enumeration" short-alias="type">
             <key-map field-name="productIdTypeEnumId"/></relationship>
-        <relationship type="one" related="mantle.product.Product"/>
+        <relationship type="one" related="mantle.product.Product" short-alias="product"/>
         <index name="PRODUCT_ID_VALUE" unique="false"><index-field name="idValue"/></index>
         <seed-data>
             <!-- Product Identification Type -->
             <moqui.basic.EnumerationType description="Product Identification Type" enumTypeId="ProductIdentificationType"/>
             <moqui.basic.Enumeration description="ISBN" enumId="PidtIsbn"  enumTypeId="ProductIdentificationType"/>
-            <moqui.basic.Enumeration description="Manufacturer Model Number" enumId="PidtIsbnMfgModelNum"  enumTypeId="ProductIdentificationType"/>
+            <moqui.basic.Enumeration description="Mfg Model Number" enumId="PidtMfgModelNum"  enumTypeId="ProductIdentificationType"/>
             <moqui.basic.Enumeration description="Other" enumId="PidtOther"  enumTypeId="ProductIdentificationType"/>
             <moqui.basic.Enumeration description="SKU" enumId="PidtSku"  enumTypeId="ProductIdentificationType"/>
             <moqui.basic.Enumeration description="UPCA" enumId="PidtUpca"  enumTypeId="ProductIdentificationType"/>
@@ -450,10 +476,10 @@ along with this software (see the LICENSE.md file). If not, see
 
         <relationship type="one" title="ProductIdentificationType" related="moqui.basic.Enumeration" short-alias="type">
             <key-map field-name="productIdTypeEnumId"/></relationship>
-        <relationship type="one" related="mantle.product.Product"/>
-        <relationship type="one" related="mantle.product.store.ProductStore"/>
+        <relationship type="one" related="mantle.product.Product" short-alias="product"/>
+        <relationship type="one" related="mantle.product.store.ProductStore" short-alias="productStore"/>
         <relationship type="one" related="mantle.marketing.segment.MarketSegment" short-alias="marketSegment"/>
-        <relationship type="one" title="Parent" related="mantle.product.Product">
+        <relationship type="one" title="Parent" related="mantle.product.Product" short-alias="parentProduct">
             <key-map field-name="parentProductId" related="productId"/></relationship>
         <index name="PRODUCT_STR_ID_VAL" unique="false"><index-field name="idValue"/></index>
     </entity>
@@ -480,11 +506,15 @@ along with this software (see the LICENSE.md file). If not, see
         <field name="productParameterId" type="id" not-null="true"/>
         <field name="productId" type="id"><description>Optional, if null option applies to all products that use the ProductParameter</description></field>
         <field name="marketSegmentId" type="id"/>
+        <field name="productStoreId" type="id"/>
         <field name="productUomDimensionId" type="id"><description>For options associated with a ProductUomDimension</description></field>
         <field name="productOtherIdentId" type="id"><description>For options associated with a ProductOtherIdentification</description></field>
         <field name="parameterValue" type="text-medium"/>
+        <field name="sequenceNum" type="number-integer"/>
         <relationship type="one" related="mantle.product.ProductParameter" short-alias="productParameter"/>
+        <relationship type="one" related="mantle.product.Product" short-alias="product"/>
         <relationship type="one" related="mantle.marketing.segment.MarketSegment" short-alias="marketSegment"/>
+        <relationship type="one" related="mantle.product.store.ProductStore" short-alias="productStore"/>
         <relationship type="one" related="mantle.product.ProductUomDimension" short-alias="productUomDimension"/>
         <relationship type="one" related="mantle.product.ProductOtherIdentification" short-alias="productOtherIdent"/>
     </entity>
